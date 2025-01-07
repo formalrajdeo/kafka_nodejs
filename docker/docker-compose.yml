@@ -1,0 +1,189 @@
+version: '3.1'
+services:
+
+  mongodb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    expose:
+      - 27018
+    command: --quiet
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"  # AMQP port
+      - "15672:15672"  # RabbitMQ Management UI port
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+  zookeeper:
+    image: zookeeper
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"  # Zookeeper port
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - mongodb_network
+
+  kafka:
+    image: confluentinc/cp-kafka
+    container_name: kafka
+    restart: always
+    ports:
+      - "9092:9092"  # Kafka port
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181  # Using Zookeeper service within the same network
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_LISTENER_PORT=9092
+      - KAFKA_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper
+    networks:
+      - mongodb_network
+
+  # mongo-express:
+  #   image: mongo-express
+  #   container_name: mongo-express
+  #   restart: always
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+  #     - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+  #     - ME_CONFIG_MONGODB_SERVER=mongodb:27018
+  #     - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+  #   command: sh -c 'apk update && apk add mongodb-tools && node app'
+
+  # mysqldb:
+  #   image: mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: password
+  #     MYSQL_DATABASE: test_db
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - ./mysql_data:/var/lib/mysql
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   restart: always
+  #   environment:
+  #     PMA_HOST: mysqldb
+  #     PMA_USER: root
+  #     PMA_PASSWORD: password
+  #   ports:
+  #     - "8080:80"
+
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin123
+  #   ports:
+  #     - "5050:80"
+
+  # postgres:
+  #   image: postgres:15
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: test_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./postgres_data:/var/lib/postgresql/data
+
+  # redis:
+  #   image: redis
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   environment:
+  #     - REDIS_PASSWORD=password
+
+  # redis-insight:
+  #   image: redislabs/redisinsight
+  #   container_name: redis-insight
+  #   restart: always
+  #   ports:
+  #     - "8001:8001"
+  #   environment:
+  #     - REDISINSIGHT_REDIS_HOSTS=redis:6379
+
+  # php-apache-environment:
+  #   container_name: php-apache
+  #   image: php:8.0-apache
+  #   volumes:
+  #     - ./php/src:/var/www/html/
+  #   ports:
+  #     - 8000:80
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.13.4
+  #   container_name: elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #   ports:
+  #     - 9200:9200
+  #   volumes:
+  #     - ./elasticsearch_data:/usr/share/elasticsearch/data
+
+  # filezilla-server:
+  #   image: linuxserver/filezilla
+  #   container_name: filezilla-server
+  #   restart: always
+  #   ports:
+  #     - "21:21"  # FTP control port
+  #     - "50000-50010:50000-50010"  # Passive mode port range
+  #   volumes:
+  #     - ./filezilla_data:/config
+  #   environment:
+  #     - TZ=Asia/Kolkata  # Set the timezone to Asia/Kolkata
+  #     - FTP_USER=username
+  #     - FTP_PASS=password
+  #     - PASV_ADDRESS=localhost
+  #   expose:
+  #     - "21"
+  #     - "50000-50010"
+
+  # mariadb:
+  #   image: mariadb:latest
+  #   container_name: mariadb
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: password
+  #     MYSQL_DATABASE: test_db
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: userpassword
+  #   ports:
+  #     - "3307:3306"  # MariaDB default port
+  #   volumes:
+  #     - ./mariadb_data:/var/lib/mysql
+
+# networks:
+#   default:
+#     name: mongodb_network
+networks:
+  mongodb_network:
+    driver: bridge
