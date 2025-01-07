@@ -1,0 +1,14 @@
+create two microservice loosely coupled with event driven architecture. Tech stack : NodeJS, kafka, zookeeper both these in docker-compose file i need bro. i service producer will dispatched post with {message:"post 1"} any extra metadata if you want to add you can add. 2nd service will consume and will do bulk write. Also create one test file using k6 to put 14 lakh data to test okay.
+Make code error proof, proper structure make kfka pure class based function to use in server file for each service. If naything thing i missed covered all and provide full code okay.Thank you
+
+docker-compose up --force-recreate --build -d
+docker-compose up -d --build
+
+
+
+
+docker pull grafana/k6
+docker run --add-host=host.docker.internal:host-gateway -i grafana/k6 run - <test-script.js
+
+docker run --add-host=host.docker.internal:host-gateway -v $(pwd):/test -i grafana/k6 run - <test-script.js
+docker run --add-host=host.docker.internal:host-gateway -i grafana/k6 run - <test-script.js

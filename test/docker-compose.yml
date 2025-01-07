@@ -1,0 +1,15 @@
+services:
+  k6:
+    image: grafana/k6
+    container_name: k6
+    volumes:
+      - C:/Users/raj/OneDrive/Desktop/kafka/test/scripts:/k6/scripts  # Absolute path for Windows
+    networks:
+      - k6-network
+    command: run /k6/scripts/test-script.js
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  k6-network:
+    driver: bridge
